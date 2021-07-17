@@ -34,3 +34,17 @@ def get_task_by_id(pk: int) -> Task:
         raise
 
     return task
+
+
+def execute_task(task: Task) -> None:
+    """
+    Execute task by set 'is_executed' to True. If it is already True, change to False.
+
+    :param task: Task object
+    :type task: Task
+    """
+    if task.is_executed:
+        task.is_executed = False
+    else:
+        task.is_executed = True
+    task.save()

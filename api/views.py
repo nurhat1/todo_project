@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .serializers import TaskListSerializer, TaskDetailSerializer
-from .services import get_list_of_tasks, get_task_by_id
+from .services import get_list_of_tasks, get_task_by_id, execute_task
 from .models import Task
 
 # Create your views here.
@@ -82,6 +82,32 @@ def task_detail(request, pk):
     except Task.DoesNotExist:
         return Response({
             "message": f"Task with id {pk} does not exist", 
+            "status": status.HTTP_404_NOT_FOUND
+        })
+    except Exception:
+        return Response({
+            "message": "An error occurred on the server side, please try again later",
+            "status": status.HTTP_500_INTERNAL_SERVER_ERROR
+        })
+
+
+@api_view(['POST'])
+def task_execute(request, pk):
+    """
+    Execute task by marking it completed or vice versa
+    """
+    try:
+        task = get_task_by_id(pk)
+        execute_task(task)
+        task_serializer = TaskDetailSerializer(task)
+        return Response({
+            "message": "success",
+            "data": task_serializer.data, 
+            "status": status.HTTP_200_OK
+        })
+    except Task.DoesNotExist:
+        return Response({
+            "message": f"Task with id {pk} does not exist",
             "status": status.HTTP_404_NOT_FOUND
         })
     except Exception:
