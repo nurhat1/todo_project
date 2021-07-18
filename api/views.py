@@ -98,7 +98,7 @@ def task_execute(request, pk):
     """
     try:
         task = get_task_by_id(pk)
-        execute_task(task)
+        execute_task(request.user, task)
         task_serializer = TaskDetailSerializer(task)
         return Response({
             "message": "success",

@@ -1,6 +1,7 @@
 from typing import List
 
 from django.core.mail import EmailMessage
+from django.contrib.auth.models import User
 
 from .models import Task
 from .tasks import send_email_task
@@ -39,7 +40,7 @@ def get_task_by_id(pk: int) -> Task:
     return task
 
 
-def execute_task(task: Task) -> None:
+def execute_task(user, task: Task) -> None:
     """
     Execute task by set 'is_executed' to True. If it is already True, change to False.
     Send email to the user about task execution.
@@ -47,10 +48,15 @@ def execute_task(task: Task) -> None:
     :param task: Task object
     :type task: Task
     """
+    try:
+        user_email = user.email
+    except Exception:
+        user_email = None
+    
     if task.is_executed:
         task.is_executed = False
-        send_email_task.delay(f"Task <{task.title}> is unmarked.", "ibragimnurhat@gmail.com")
+        send_email_task.delay(f"Task <{task.title}> is unmarked.", user_email)
     else:
         task.is_executed = True
-        send_email_task.delay(f"Task <{task.title}> is executed.", "ibragimnurhat@gmail.com")
+        send_email_task.delay(f"Task <{task.title}> is executed.", user_email)
     task.save()
